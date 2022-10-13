@@ -1,47 +1,14 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  PopupWindow.cpp
-//
-//          CProeprtyPopupWindow
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "Globals.h"
 #include "TextService.h"
 #include "PopupWindow.h"
 
 TCHAR CPropertyPopupWindow::_szWndClass[] = TEXT("PropertyPopupWindow");
 
-//+---------------------------------------------------------------------------
-//
-// CPropertyPopupWindow
-//
-//----------------------------------------------------------------------------
-
-//+---------------------------------------------------------------------------
-//
-// ctor
-//
-//----------------------------------------------------------------------------
-
 CPropertyPopupWindow::CPropertyPopupWindow()
 {
     _hwnd = NULL;
     _psz = NULL;
 }
-
-//+---------------------------------------------------------------------------
-//
-// dtor
-//
-//----------------------------------------------------------------------------
 
 CPropertyPopupWindow::~CPropertyPopupWindow()
 {
@@ -51,13 +18,6 @@ CPropertyPopupWindow::~CPropertyPopupWindow()
     if (_psz)
         LocalFree(_psz);
 }
-
-
-//+---------------------------------------------------------------------------
-//
-// StaticInit
-//
-//----------------------------------------------------------------------------
 
 BOOL CPropertyPopupWindow::StaticInit()
 {
@@ -78,30 +38,19 @@ BOOL CPropertyPopupWindow::StaticInit()
     return TRUE;
 }
 
-//+---------------------------------------------------------------------------
-//
-// CreateWnd
-//
-//----------------------------------------------------------------------------
 
 HWND CPropertyPopupWindow::CreateWnd()
 {
     if (_hwnd)
         return _hwnd;
-
-    _hwnd = CreateWindowEx(WS_EX_TOPMOST, _szWndClass, TEXT(""),
+    // https://learn.microsoft.com/en-us/windows/win32/learnwin32/creating-a-window
+    _hwnd = CreateWindowEx(WS_EX_TOPMOST, _szWndClass, TEXT("TSF Property Monitor"),
                            WS_POPUP | WS_THICKFRAME | WS_DISABLED,
                            0, 0, 0, 0,
                            NULL, 0, g_hInst, this);
 
     return _hwnd;
 }
-
-//+---------------------------------------------------------------------------
-//
-// _OwnerWndProc
-//
-//----------------------------------------------------------------------------
 
 LRESULT CALLBACK CPropertyPopupWindow::_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -132,11 +81,8 @@ LRESULT CALLBACK CPropertyPopupWindow::_WndProc(HWND hwnd, UINT uMsg, WPARAM wPa
 
 
 //+---------------------------------------------------------------------------
-//
-// Show
-//
+// Show the debugger window
 //----------------------------------------------------------------------------
-
 void CPropertyPopupWindow::Show()
 {
     if (!IsWindow(_hwnd))
@@ -162,13 +108,6 @@ void CPropertyPopupWindow::Show()
 
 }
 
-
-//+---------------------------------------------------------------------------
-//
-// Hide
-//
-//----------------------------------------------------------------------------
-
 void CPropertyPopupWindow::Hide()
 {
     if (!IsWindow(_hwnd))
@@ -176,13 +115,6 @@ void CPropertyPopupWindow::Hide()
 
     ShowWindow(_hwnd, SW_HIDE);
 }
-
-
-//+---------------------------------------------------------------------------
-//
-// SetString
-//
-//----------------------------------------------------------------------------
 
 void CPropertyPopupWindow::SetString(IStream *pStream)
 {
@@ -210,12 +142,6 @@ void CPropertyPopupWindow::SetString(IStream *pStream)
     InvalidateRect(_hwnd, NULL, TRUE);
 }
 
-//+---------------------------------------------------------------------------
-//
-// OnPaint
-//
-//----------------------------------------------------------------------------
-
 void CPropertyPopupWindow::OnPaint(HWND hwnd, HDC hdc)
 {
     HFONT hfont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
@@ -230,12 +156,6 @@ void CPropertyPopupWindow::OnPaint(HWND hwnd, HDC hdc)
 
     SelectObject(hdc, hfontOld);
 }
-
-//+---------------------------------------------------------------------------
-//
-// _ShowPopupWindow
-//
-//----------------------------------------------------------------------------
 
 void CPropertyMonitorTextService::_ShowPopupWindow()
 {

@@ -46,6 +46,11 @@ const GUID c_guidPropCustom = {
     {0xa6, 0xee, 0x00, 0x06, 0x5b, 0x84, 0x43, 0x5c}
   };
 
+const GUID c_guidPropUrl = { 0xd5138268,
+                            0xa1bf,
+                            0x4308,
+                            {0xbc, 0xbf, 0x2e, 0x73, 0x93, 0x98, 0xe2, 0x34} };
+
 typedef struct tag_GUIDINFO {
     const GUID  *pguid;
     WCHAR       szDesc[50];
@@ -58,16 +63,11 @@ GUIDINFO g_giKnownGuids[] = {
     {&GUID_PROP_READING,       L"GUID_PROP_READING"},
     {&GUID_PROP_COMPOSING,     L"GUID_PROP_COMPOSING"},
     {&GUID_PROP_MODEBIAS,      L"GUID_PROP_COMPOSING"},
+    {&c_guidPropUrl,           L"GUID_PROP_URL"},
     {&c_guidPropStaticCompact, L"Property TextService Static Compact"},
     {&c_guidPropStatic,        L"Property TextService Static"},
     {&c_guidPropCustom,        L"Property TextService Custom"},
     {&GUID_NULL,           L""}};
-
-//+---------------------------------------------------------------------------
-//
-// CLSIDToStringW
-//
-//----------------------------------------------------------------------------
 
 BOOL CLSIDToStringW(REFGUID refGUID, WCHAR *pch)
 {
@@ -101,12 +101,6 @@ BOOL CLSIDToStringW(REFGUID refGUID, WCHAR *pch)
     return TRUE;
 }
 
-//+---------------------------------------------------------------------------
-//
-// CDumpPropertiesEditSession
-//
-//----------------------------------------------------------------------------
-
 class CDumpPropertiesEditSession : public CEditSessionBase
 {
 public:
@@ -119,23 +113,11 @@ public:
 
 };
 
-//+---------------------------------------------------------------------------
-//
-// DoEditSession
-//
-//----------------------------------------------------------------------------
-
 STDAPI CDumpPropertiesEditSession::DoEditSession(TfEditCookie ec)
 {
     _pTextService->_DumpProperties(ec, _pContext);
     return S_OK;
 }
-
-//+---------------------------------------------------------------------------
-//
-// DumpProperties
-//
-//----------------------------------------------------------------------------
 
 void CPropertyMonitorTextService::DumpProperties(ITfContext *pContext)
 {
@@ -153,16 +135,11 @@ Exit:
     return;
 }
 
-//+---------------------------------------------------------------------------
-//
-// _DumpPropertyInfo
-//
-//----------------------------------------------------------------------------
-
 void CPropertyMonitorTextService::_DumpPropertyInfo(REFGUID rguid)
 {
     WCHAR sz[512];
     CLSIDToStringW(rguid, sz);
+    OutputDebugString(sz);
     AddStringToStream(_pMemStream, sz);
 
     int i = 0;
@@ -178,12 +155,6 @@ void CPropertyMonitorTextService::_DumpPropertyInfo(REFGUID rguid)
     }
     AddStringToStream(_pMemStream, L"\r\n");
 }
-
-//+---------------------------------------------------------------------------
-//
-// _IsDisplayAttributeProperty
-//
-//----------------------------------------------------------------------------
 
 BOOL CPropertyMonitorTextService::_IsDisplayAttributeProperty(REFGUID rguid)
 {
@@ -206,12 +177,6 @@ BOOL CPropertyMonitorTextService::_IsDisplayAttributeProperty(REFGUID rguid)
     return fRet;
 }
 
-//+---------------------------------------------------------------------------
-//
-// _GetTextLengthInRange
-//
-//----------------------------------------------------------------------------
-
 HRESULT CPropertyMonitorTextService::_GetTextLengthInRange(TfEditCookie ec, ITfRange *pRange, LONG *pcch)
 {
     ITfRange *pTempRange;
@@ -231,12 +196,6 @@ HRESULT CPropertyMonitorTextService::_GetTextLengthInRange(TfEditCookie ec, ITfR
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// _GetTextExtent
-//
-//----------------------------------------------------------------------------
-
 HRESULT CPropertyMonitorTextService::_GetTextExtent(TfEditCookie ec, ITfRange *pRange, LONG *pacp, LONG *pcch)
 {
     ITfContext *pContext;
@@ -250,19 +209,16 @@ HRESULT CPropertyMonitorTextService::_GetTextExtent(TfEditCookie ec, ITfRange *p
 
     if (SUCCEEDED(pContext->GetStart(ec, &pStart)))
     {
-        //
-        // In fact, it is not good idea to try to get the position in general.
-        // Accessing the text from begging may cause a performance problem
-        // if it is the huge document.
+        // In real code, it is not good idea to try to get the position in general.
+        // Accessing the text from the beginning may cause a performance problem
+        // if it is a huge document.
         // This is a property monitor tool and provide the detail property
-        // information such as debugging purpose.
+        // information for debugging purposes.
         //
         pStart->ShiftEndToRange(ec, pRange, TF_ANCHOR_START);
         _GetTextLengthInRange(ec, pStart, pacp);
 
-        //
-        // Getting the length of the range is ordinal action. 
-        //
+        // Getting the length of the range is ordinal action.
         _GetTextLengthInRange(ec, pRange, pcch);
 
         pStart->Release();
@@ -388,6 +344,18 @@ void CPropertyMonitorTextService::_DumpPropertyRange(REFGUID rguid, TfEditCookie
                     AddStringToStream(_pMemStream, L"\tvalue ");
                     StringCchPrintf(sz, ARRAYSIZE(sz), L"0x%04x", var.lVal);
                     AddStringToStream(_pMemStream, sz);
+                }
+            }
+            else if (IsEqualGUID(rguid, c_guidPropUrl))
+            {
+                OutputDebugString(L"!!! TSF Property monitor found a URL value!");
+                if (var.vt == VT_BSTR)
+                {
+                    AddStringToStream(_pMemStream, L"\tURL: ");
+                    AddStringToStream(_pMemStream, var.bstrVal);
+                }
+                else {
+                    AddStringToStream(_pMemStream, L"\tunexpected URL variant type");
                 }
             }
 

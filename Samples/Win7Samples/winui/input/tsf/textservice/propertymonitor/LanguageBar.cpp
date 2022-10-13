@@ -86,16 +86,14 @@ CLangBarItemButton::CLangBarItemButton(CPropertyMonitorTextService *pTextService
 {
     DllAddRef();
 
-    //
     // initialize TF_LANGBARITEMINFO structure.
-    //
     _tfLangBarItemInfo.clsidService = c_clsidPropertyMonitorTextService;    // This LangBarItem belongs to this TextService.
     _tfLangBarItemInfo.guidItem = c_guidLangBarItemButton;   // GUID of this LangBarItem.
     _tfLangBarItemInfo.dwStyle = TF_LBI_STYLE_BTN_MENU;      // This LangBar is a button type with a menu.
     _tfLangBarItemInfo.ulSort = 0;                           // The position of this LangBar Item is not specified.
     StringCchCopy(_tfLangBarItemInfo.szDescription, ARRAYSIZE(_tfLangBarItemInfo.szDescription), LANGBAR_ITEM_DESC);                        // Set the description of this LangBar Item.
 
-    // Initialize the sink pointer to NULL.
+    // Initialize the sink pointer.
     _pLangBarItemSink = NULL;
 
     _pTextService = pTextService;
@@ -104,23 +102,11 @@ CLangBarItemButton::CLangBarItemButton(CPropertyMonitorTextService *pTextService
     _cRef = 1;
 }
 
-//+---------------------------------------------------------------------------
-//
-// dtor
-//
-//----------------------------------------------------------------------------
-
 CLangBarItemButton::~CLangBarItemButton()
 {
     DllRelease();
     _pTextService->Release();
 }
-
-//+---------------------------------------------------------------------------
-//
-// QueryInterface
-//
-//----------------------------------------------------------------------------
 
 STDAPI CLangBarItemButton::QueryInterface(REFIID riid, void **ppvObj)
 {
@@ -149,23 +135,10 @@ STDAPI CLangBarItemButton::QueryInterface(REFIID riid, void **ppvObj)
     return E_NOINTERFACE;
 }
 
-
-//+---------------------------------------------------------------------------
-//
-// AddRef
-//
-//----------------------------------------------------------------------------
-
 STDAPI_(ULONG) CLangBarItemButton::AddRef()
 {
     return ++_cRef;
 }
-
-//+---------------------------------------------------------------------------
-//
-// Release
-//
-//----------------------------------------------------------------------------
 
 STDAPI_(ULONG) CLangBarItemButton::Release()
 {
@@ -181,23 +154,11 @@ STDAPI_(ULONG) CLangBarItemButton::Release()
     return cr;
 }
 
-//+---------------------------------------------------------------------------
-//
-// GetInfo
-//
-//----------------------------------------------------------------------------
-
 STDAPI CLangBarItemButton::GetInfo(TF_LANGBARITEMINFO *pInfo)
 {
     *pInfo = _tfLangBarItemInfo;
     return S_OK;
 }
-
-//+---------------------------------------------------------------------------
-//
-// GetStatus
-//
-//----------------------------------------------------------------------------
 
 STDAPI CLangBarItemButton::GetStatus(DWORD *pdwStatus)
 {
@@ -205,22 +166,10 @@ STDAPI CLangBarItemButton::GetStatus(DWORD *pdwStatus)
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// Show
-//
-//----------------------------------------------------------------------------
-
 STDAPI CLangBarItemButton::Show(BOOL fShow)
 {
     return E_NOTIMPL;
 }
-
-//+---------------------------------------------------------------------------
-//
-// GetTooltipString
-//
-//----------------------------------------------------------------------------
 
 STDAPI CLangBarItemButton::GetTooltipString(BSTR *pbstrToolTip)
 {
@@ -229,27 +178,14 @@ STDAPI CLangBarItemButton::GetTooltipString(BSTR *pbstrToolTip)
     return (*pbstrToolTip == NULL) ? E_OUTOFMEMORY : S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// OnClick
-//
-//----------------------------------------------------------------------------
-
 STDAPI CLangBarItemButton::OnClick(TfLBIClick click, POINT pt, const RECT *prcArea)
 {
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// InitMenu
-//
-//----------------------------------------------------------------------------
-
 STDAPI CLangBarItemButton::InitMenu(ITfMenu *pMenu)
 {
-    // 
-    // Add the fisrt menu item.
+    // Add our menu item.
     // 
     DWORD dwFlags = 0;
     if (_pTextService->_GetPopupWindow() &&
@@ -259,30 +195,25 @@ STDAPI CLangBarItemButton::InitMenu(ITfMenu *pMenu)
     }
 
     pMenu->AddMenuItem(MENUITEM_INDEX_SHOWPOPUPWINDOW,
-                       dwFlags, 
-                       NULL, 
-                       NULL, 
-                       c_szMenuItemDescriptionShowPopupWindow, 
+                       dwFlags,
+                       NULL,
+                       NULL,
+                       c_szMenuItemDescriptionShowPopupWindow,
                        (ULONG)lstrlen(c_szMenuItemDescriptionShowPopupWindow), 
                        NULL);
 
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// OnMenuSelect
-//
-//----------------------------------------------------------------------------
-
 STDAPI CLangBarItemButton::OnMenuSelect(UINT wID)
 {
     //
-    // This is callback when the menu item is selected.
+    // This callback runs when the menu item is selected.
     //
     switch (wID)
     {
         case MENUITEM_INDEX_SHOWPOPUPWINDOW:
+            OutputDebugString(L"!!!TSF Debugger: Popup window requested");
             if (_pTextService->_GetPopupWindow())
             {
                 if (_pTextService->_GetPopupWindow()->IsShown())
@@ -290,18 +221,14 @@ STDAPI CLangBarItemButton::OnMenuSelect(UINT wID)
                 else
                     _pTextService->_GetPopupWindow()->Show();
             }
+            else {
+                OutputDebugString(L"TSF Debugger: failed to get popup window.");
+            }
             break;
-
     }
 
     return S_OK;
 }
-
-//+---------------------------------------------------------------------------
-//
-// GetIcon
-//
-//----------------------------------------------------------------------------
 
 STDAPI CLangBarItemButton::GetIcon(HICON *phIcon)
 {
@@ -309,12 +236,6 @@ STDAPI CLangBarItemButton::GetIcon(HICON *phIcon)
  
     return (*phIcon != NULL) ? S_OK : E_FAIL;
 }
-
-//+---------------------------------------------------------------------------
-//
-// GetText
-//
-//----------------------------------------------------------------------------
 
 STDAPI CLangBarItemButton::GetText(BSTR *pbstrText)
 {

@@ -17,8 +17,8 @@
 #define POPUPWINDOW_H
 
 
-#define POPUP_CX 450
-#define POPUP_CY 300
+#define POPUP_CX 850
+#define POPUP_CY 400
 
 class CPropertyPopupWindow
 {
