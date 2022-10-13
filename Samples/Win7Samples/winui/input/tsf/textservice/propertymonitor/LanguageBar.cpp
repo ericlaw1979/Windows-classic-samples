@@ -1,43 +1,16 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  LanguageBar.cpp
-//
-//          Language Bar UI code.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "Globals.h"
 #include "TextService.h"
 #include "Resource.h"
 #include "PopupWindow.h"
 
-//
 // The cookie for the sink to CLangBarItemButton.
-//
 #define TEXTSERVICE_LANGBARITEMSINK_COOKIE 0x0fab0fab
 
-//
-// The ids of the menu item of the language bar button.
-//
+// The id of the menu item of the language bar button.
 #define MENUITEM_INDEX_SHOWPOPUPWINDOW 0
 
-//
-// The descriptions of the menu item of the language bar button.
-//
+// The description of the menu item of the language bar button.
 static WCHAR c_szMenuItemDescriptionShowPopupWindow[] = L"Show PopupWindow";
-
-//+---------------------------------------------------------------------------
-//
-// CLangBarItemButton class
-//
-//----------------------------------------------------------------------------
 
 class CLangBarItemButton : public ITfLangBarItemButton,
                            public ITfSource
@@ -75,12 +48,6 @@ private:
     CPropertyMonitorTextService *_pTextService;
     LONG _cRef;
 };
-
-//+---------------------------------------------------------------------------
-//
-// ctor
-//
-//----------------------------------------------------------------------------
 
 CLangBarItemButton::CLangBarItemButton(CPropertyMonitorTextService *pTextService)
 {
@@ -183,10 +150,10 @@ STDAPI CLangBarItemButton::OnClick(TfLBIClick click, POINT pt, const RECT *prcAr
     return S_OK;
 }
 
+// Add our menu item to the language bar, showing as checked if the
+// popup window is showing.
 STDAPI CLangBarItemButton::InitMenu(ITfMenu *pMenu)
 {
-    // Add our menu item.
-    // 
     DWORD dwFlags = 0;
     if (_pTextService->_GetPopupWindow() &&
         _pTextService->_GetPopupWindow()->IsShown())
@@ -205,11 +172,9 @@ STDAPI CLangBarItemButton::InitMenu(ITfMenu *pMenu)
     return S_OK;
 }
 
+// This callback runs when the menu item is invoked.
 STDAPI CLangBarItemButton::OnMenuSelect(UINT wID)
 {
-    //
-    // This callback runs when the menu item is selected.
-    //
     switch (wID)
     {
         case MENUITEM_INDEX_SHOWPOPUPWINDOW:
@@ -244,59 +209,35 @@ STDAPI CLangBarItemButton::GetText(BSTR *pbstrText)
     return (*pbstrText == NULL) ? E_OUTOFMEMORY : S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// AdviseSink
-//
-//----------------------------------------------------------------------------
-
 STDAPI CLangBarItemButton::AdviseSink(REFIID riid, IUnknown *punk, DWORD *pdwCookie)
 {
-    //
     // We allow only ITfLangBarItemSink interface.
-    //
     if (!IsEqualIID(IID_ITfLangBarItemSink, riid))
         return CONNECT_E_CANNOTCONNECT;
 
-    //
     // We support only one sink once.
-    //
     if (_pLangBarItemSink != NULL)
         return CONNECT_E_ADVISELIMIT;
 
-    //
     // Query the ITfLangBarItemSink interface and store it into _pLangBarItemSink.
-    //
     if (punk->QueryInterface(IID_ITfLangBarItemSink, (void **)&_pLangBarItemSink) != S_OK)
     {
         _pLangBarItemSink = NULL;
         return E_NOINTERFACE;
     }
 
-    //
     // return our cookie.
-    //
     *pdwCookie = TEXTSERVICE_LANGBARITEMSINK_COOKIE;
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// UnadviseSink
-//
-//----------------------------------------------------------------------------
-
 STDAPI CLangBarItemButton::UnadviseSink(DWORD dwCookie)
 {
-    // 
     // Check the given cookie.
-    // 
     if (dwCookie != TEXTSERVICE_LANGBARITEMSINK_COOKIE)
         return CONNECT_E_NOCONNECTION;
 
-    //
-    // If there is nno connected sink, we just fail.
-    //
+    // If there is no connected sink, fail.
     if (_pLangBarItemSink == NULL)
         return CONNECT_E_NOCONNECTION;
 
@@ -305,12 +246,6 @@ STDAPI CLangBarItemButton::UnadviseSink(DWORD dwCookie)
 
     return S_OK;
 }
-
-//+---------------------------------------------------------------------------
-//
-// _InitLanguageBar
-//
-//----------------------------------------------------------------------------
 
 BOOL CPropertyMonitorTextService::_InitLanguageBar()
 {
@@ -338,12 +273,6 @@ Exit:
     pLangBarItemMgr->Release();
     return fRet;
 }
-
-//+---------------------------------------------------------------------------
-//
-// _UninitLanguageBar
-//
-//----------------------------------------------------------------------------
 
 void CPropertyMonitorTextService::_UninitLanguageBar()
 {

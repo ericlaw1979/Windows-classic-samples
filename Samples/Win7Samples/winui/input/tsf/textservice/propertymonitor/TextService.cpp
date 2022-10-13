@@ -1,28 +1,8 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  TextService.cpp
-//
-//          IUnknown, ITfTextInputProcessor implementation.
-//
-//////////////////////////////////////////////////////////////////////
-
+// IUnknown, ITfTextInputProcessor implementation.
 #include "globals.h"
 #include "TextService.h"
 #include "MemoryStream.h"
 #include "PopupWindow.h"
-
-//+---------------------------------------------------------------------------
-//
-// CreateInstance
-//
-//----------------------------------------------------------------------------
 
 /* static */
 HRESULT CPropertyMonitorTextService::CreateInstance(IUnknown *pUnkOuter, REFIID riid, void **ppvObj)
@@ -48,29 +28,17 @@ HRESULT CPropertyMonitorTextService::CreateInstance(IUnknown *pUnkOuter, REFIID 
     return hr;
 }
 
-//+---------------------------------------------------------------------------
-//
-// ctor
-//
-//----------------------------------------------------------------------------
-
 CPropertyMonitorTextService::CPropertyMonitorTextService()
 {
     DllAddRef();
 
-    //
     // Initialize the thread manager pointer.
-    //
     _pThreadMgr = NULL;
 
-    //
     // Initialize the numbers for ThreadMgrEventSink.
-    //
     _dwThreadMgrEventSinkCookie = TF_INVALID_COOKIE;
 
-    //
     // Initialize the numbers for TextEditSink.
-    //
     _pTextEditSinkContext = NULL;
     _dwTextEditSinkCookie = TF_INVALID_COOKIE;
 
@@ -83,22 +51,10 @@ CPropertyMonitorTextService::CPropertyMonitorTextService()
     _cRef = 1;
 }
 
-//+---------------------------------------------------------------------------
-//
-// dtor
-//
-//----------------------------------------------------------------------------
-
 CPropertyMonitorTextService::~CPropertyMonitorTextService()
 {
     DllRelease();
 }
-
-//+---------------------------------------------------------------------------
-//
-// QueryInterface
-//
-//----------------------------------------------------------------------------
 
 STDAPI CPropertyMonitorTextService::QueryInterface(REFIID riid, void **ppvObj)
 {
@@ -134,23 +90,10 @@ STDAPI CPropertyMonitorTextService::QueryInterface(REFIID riid, void **ppvObj)
     return E_NOINTERFACE;
 }
 
-
-//+---------------------------------------------------------------------------
-//
-// AddRef
-//
-//----------------------------------------------------------------------------
-
 STDAPI_(ULONG) CPropertyMonitorTextService::AddRef()
 {
     return ++_cRef;
 }
-
-//+---------------------------------------------------------------------------
-//
-// Release
-//
-//----------------------------------------------------------------------------
 
 STDAPI_(ULONG) CPropertyMonitorTextService::Release()
 {
@@ -166,28 +109,18 @@ STDAPI_(ULONG) CPropertyMonitorTextService::Release()
     return cr;
 }
 
-//+---------------------------------------------------------------------------
-//
-// Activate
-//
-//----------------------------------------------------------------------------
-
 STDAPI CPropertyMonitorTextService::Activate(ITfThreadMgr *pThreadMgr, TfClientId tfClientId)
 {
     _pThreadMgr = pThreadMgr;
     _pThreadMgr->AddRef();
     _tfClientId = tfClientId;
 
-    //
     // Initialize ThreadMgrEventSink.
-    //
     if (!_InitThreadMgrEventSink())
         goto ExitError;
 
-    // 
     //  If there is the focus document manager already,
     //  we advise the TextEditSink.
-    // 
     ITfDocumentMgr *pDocMgrFocus;
     if ((_pThreadMgr->GetFocus(&pDocMgrFocus) == S_OK) &&
         (pDocMgrFocus != NULL))
@@ -196,15 +129,11 @@ STDAPI CPropertyMonitorTextService::Activate(ITfThreadMgr *pThreadMgr, TfClientI
         pDocMgrFocus->Release();
     }
 
-    //
     // Initialize Language Bar.
-    //
     if (!_InitLanguageBar())
         goto ExitError;
 
-    //
     // Initialize Thread focus sink.
-    //
     if (!_InitThreadFocusSink())
         goto ExitError;
 
@@ -239,32 +168,15 @@ ExitError:
     return E_FAIL;
 }
 
-//+---------------------------------------------------------------------------
-//
-// Deactivate
-//
-//----------------------------------------------------------------------------
-
 STDAPI CPropertyMonitorTextService::Deactivate()
 {
-    //
     // Unadvise TextEditSink if it is advised.
-    //
     _InitTextEditSink(NULL);
 
-    //
-    // Uninitialize ThreadMgrEventSink.
-    //
     _UninitThreadMgrEventSink();
 
-    //
-    // Uninitialize Language Bar.
-    //
     _UninitLanguageBar();
 
-    //
-    // Uninitialize thread focus sink.
-    //
     _UninitThreadFocusSink();
 
     if (_pPopupWindow != NULL)

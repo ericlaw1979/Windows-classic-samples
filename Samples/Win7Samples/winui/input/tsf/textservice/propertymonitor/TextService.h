@@ -1,18 +1,3 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  TextService.h
-//
-//          CPropertyMonitorTextService declaration.
-//
-//////////////////////////////////////////////////////////////////////
-
 #ifndef TEXTSERVICE_H
 #define TEXTSERVICE_H
 
@@ -101,9 +86,7 @@ private:
     // The cookie of ThreadMgrEventSink
     DWORD _dwThreadMgrEventSinkCookie;
 
-    //
     // private variables for TextEditSink
-    //
     ITfContext   *_pTextEditSinkContext;
     DWORD _dwTextEditSinkCookie;
 

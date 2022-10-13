@@ -127,8 +127,8 @@ void CPropertyMonitorTextService::DumpProperties(ITfContext *pContext)
     if ((pEditSession = new CDumpPropertiesEditSession(this, pContext)) == NULL)
         goto Exit;
 
-    pContext->RequestEditSession(_tfClientId, pEditSession, TF_ES_ASYNCDONTCARE | TF_ES_READWRITE, &hr);
-
+    pContext->RequestEditSession(_tfClientId, pEditSession, TF_ES_ASYNCDONTCARE | /*TF_ES_READWRITE*/TF_ES_READ, &hr);
+    // TODO: check |hr|
     pEditSession->Release();
 
 Exit:
@@ -139,7 +139,7 @@ void CPropertyMonitorTextService::_DumpPropertyInfo(REFGUID rguid)
 {
     WCHAR sz[512];
     CLSIDToStringW(rguid, sz);
-    OutputDebugString(sz);
+    OutputDebugString(L"!!TSF ::_DumpPropertyInfo for ");  OutputDebugString(sz);
     AddStringToStream(_pMemStream, sz);
 
     int i = 0;
@@ -241,6 +241,7 @@ void CPropertyMonitorTextService::_DumpPropertyRange(REFGUID rguid, TfEditCookie
     LONG acp;
     LONG cch;
 
+    // https://learn.microsoft.com/en-us/windows/win32/tsf/properties
     if (SUCCEEDED(_GetTextExtent(ec, prange, &acp, &cch)))
     {
         StringCchPrintf(sz, ARRAYSIZE(sz), L"%d\t%d", acp, cch);

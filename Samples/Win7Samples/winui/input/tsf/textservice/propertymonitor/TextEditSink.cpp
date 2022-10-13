@@ -1,23 +1,9 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  TextEditSink.cpp
-//
-//          ITfTextEditSink implementation.
-//
-//////////////////////////////////////////////////////////////////////
+// ITfTextEditSink implementation.
 
 #include "globals.h"
 #include "TextService.h"
 
 //+---------------------------------------------------------------------------
-//
 // OnEndEdit
 //
 // Called by the system whenever anyone releases a write-access document lock.
@@ -25,12 +11,12 @@
 
 STDAPI CPropertyMonitorTextService::OnEndEdit(ITfContext *pContext, TfEditCookie ecReadOnly, ITfEditRecord *pEditRecord)
 {
+    OutputDebugStringW(L"!!! TSF Property Monitor: CPropertyMonitorTextService::OnEndEdit");
     DumpProperties(pContext);
     return S_OK;
 }
 
 //+---------------------------------------------------------------------------
-//
 // _InitTextEditSink
 //
 // Init a text edit sink on the topmost context of the document.
@@ -60,8 +46,8 @@ BOOL CPropertyMonitorTextService::_InitTextEditSink(ITfDocumentMgr *pDocMgr)
     if (pDocMgr == NULL)
         return TRUE; // caller just wanted to clear the previous sink
 
-    // setup a new sink advised to the topmost context of the document
-
+    // Set up a new sink advised to the topmost context of the document
+    OutputDebugStringW(L"!!! TSF Property Monitor: CPropertyMonitorTextService::_InitTextEditSink setting up a new sink.");
     if (pDocMgr->GetTop(&_pTextEditSinkContext) != S_OK)
         return FALSE;
 

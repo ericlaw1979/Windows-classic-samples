@@ -1,18 +1,5 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  Register.cpp
-//
-//          Server registration code.
-//
-//////////////////////////////////////////////////////////////////////
-
+// Register with TSF by updating the registry.
+// https://learn.microsoft.com/en-us/windows/win32/tsf/text-service-registration
 #include <windows.h>
 #include <ole2.h>
 #include "msctf.h"
@@ -24,11 +11,43 @@ static const TCHAR c_szInfoKeyPrefix[] = TEXT("CLSID\\");
 static const TCHAR c_szInProcSvr32[] = TEXT("InProcServer32");
 static const TCHAR c_szModelName[] = TEXT("ThreadingModel");
 
-//+---------------------------------------------------------------------------
-//
-//  RegisterProfiles
-//
-//----------------------------------------------------------------------------
+static const GUID kCategories[] = {
+  GUID_TFCAT_TIP_KEYBOARD,              // It's a keyboard input method.
+  GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER,  // It supports inline input.
+  GUID_TFCAT_TIPCAP_UIELEMENTENABLED,   // It supports UI less mode.
+  // COM less is required for some applications, like WOW.
+//  GUID_TFCAT_TIPCAP_COMLESS,
+};
+
+// https://learn.microsoft.com/en-us/windows/win32/api/msctf/nf-msctf-itfcategorymgr-registercategory
+BOOL RegisterCategories()
+{
+    ITfCategoryMgr* pCategoryMgr;
+    HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, NULL, CLSCTX_ALL, IID_ITfCategoryMgr, (void**)&pCategoryMgr);
+    if (FAILED(hr)) return hr;
+    for (int i = 0; i < ARRAYSIZE(kCategories); i++) {
+        hr = pCategoryMgr->RegisterCategory(c_clsidPropertyMonitorTextService, kCategories[i], c_clsidPropertyMonitorTextService);
+        if (FAILED(hr)) return hr;
+    }
+    return S_OK;
+}
+
+void UnregisterCategories() {
+    ITfCategoryMgr* pCategoryMgr;
+    HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, NULL, CLSCTX_ALL, IID_ITfCategoryMgr, (void**)&pCategoryMgr);
+
+    if (SUCCEEDED(hr)) {
+        IEnumGUID *guids;
+        hr = pCategoryMgr->EnumCategoriesInItem(c_clsidPropertyMonitorTextService, &guids);
+        GUID guid = { 0 };
+        ULONG fetched = 0;
+        if (SUCCEEDED(hr)) {
+            while (guids->Next(1, &guid, &fetched) == S_OK) {
+                pCategoryMgr->UnregisterCategory(c_clsidPropertyMonitorTextService, guid, c_clsidPropertyMonitorTextService);
+            }
+        }
+    }
+}
 
 BOOL RegisterProfiles()
 {
@@ -49,10 +68,12 @@ BOOL RegisterProfiles()
         goto Exit;
 
     cchIconFile = GetModuleFileName(g_hInst, achIconFile, ARRAYSIZE(achIconFile));
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/msctf/nf-msctf-itfinputprocessorprofiles-addlanguageprofile
     hr = pInputProcessProfiles->AddLanguageProfile(c_clsidPropertyMonitorTextService,
-                                  TEXTSERVICE_LANGID, 
-                                  c_guidProfile, 
-                                  TEXTSERVICE_DESC, 
+                                  TEXTSERVICE_LANGID,
+                                  c_guidProfile,
+                                  TEXTSERVICE_DESC,
                                   lstrlen(TEXTSERVICE_DESC),
                                   achIconFile,
                                   cchIconFile,
@@ -62,12 +83,6 @@ Exit:
     pInputProcessProfiles->Release();
     return (hr == S_OK);
 }
-
-//+---------------------------------------------------------------------------
-//
-//  UnregisterProfiles
-//
-//----------------------------------------------------------------------------
 
 void UnregisterProfiles()
 {
@@ -83,12 +98,6 @@ void UnregisterProfiles()
     pInputProcessProfiles->Unregister(c_clsidPropertyMonitorTextService);
     pInputProcessProfiles->Release();
 }
-
-//+---------------------------------------------------------------------------
-//
-// CLSIDToString
-//
-//----------------------------------------------------------------------------
 
 BOOL CLSIDToString(REFGUID refGUID, TCHAR *pchA)
 {
@@ -123,9 +132,6 @@ BOOL CLSIDToString(REFGUID refGUID, TCHAR *pchA)
 }
 
 //+---------------------------------------------------------------------------
-//
-// RecurseDeleteKey
-//
 // RecurseDeleteKey is necessary because on NT RegDeleteKey doesn't work if the
 // specified key has subkeys
 //----------------------------------------------------------------------------
@@ -154,12 +160,7 @@ LONG RecurseDeleteKey(HKEY hParentKey, LPCTSTR lpszKey)
     return lRes == ERROR_SUCCESS ? RegDeleteKey(hParentKey, lpszKey) : lRes;
 }
 
-//+---------------------------------------------------------------------------
-//
-//  RegisterServer
-//
-//----------------------------------------------------------------------------
-
+// Register with the system as an implementer of the contract.
 BOOL RegisterServer()
 {
     DWORD dw;
@@ -194,11 +195,6 @@ BOOL RegisterServer()
     return fRet;
 }
 
-//+---------------------------------------------------------------------------
-//
-//  UnregisterServer
-//
-//----------------------------------------------------------------------------
 
 void UnregisterServer()
 {

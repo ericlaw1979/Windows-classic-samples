@@ -1,30 +1,11 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  ThreadFocusSink.cpp
-//
-//          ITfThreadFocusSink interface
-//
-//////////////////////////////////////////////////////////////////////
-
+// ITfThreadFocusSink interface
 #include "Globals.h"
 #include "TextService.h"
 #include "PopupWindow.h"
 
-//+---------------------------------------------------------------------------
-//
-// OnSetThreadFocus
-//
-//----------------------------------------------------------------------------
-
 STDAPI CPropertyMonitorTextService::OnSetThreadFocus()
 {
+    OutputDebugString(L"TSF: CPropertyMonitorTextService::OnSetThreadFocus()");
     if (_pPopupWindow)
     {
        _pPopupWindow->Show();
@@ -32,14 +13,9 @@ STDAPI CPropertyMonitorTextService::OnSetThreadFocus()
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-// OnKillThreadFocus
-//
-//----------------------------------------------------------------------------
-
 STDAPI CPropertyMonitorTextService::OnKillThreadFocus()
 {
+    OutputDebugString(L"TSF: CPropertyMonitorTextService::OnKillThreadFocus()");
     if (_pPopupWindow)
     {
        _pPopupWindow->Hide();
@@ -47,12 +23,6 @@ STDAPI CPropertyMonitorTextService::OnKillThreadFocus()
 
     return S_OK;
 }
-
-//+---------------------------------------------------------------------------
-//
-// _InitThreadFocusSink
-//
-//----------------------------------------------------------------------------
 
 BOOL CPropertyMonitorTextService::_InitThreadFocusSink()
 {
@@ -66,12 +36,6 @@ BOOL CPropertyMonitorTextService::_InitThreadFocusSink()
 
     return TRUE;
 }
- 
-//+---------------------------------------------------------------------------
-//
-// _UninitThreadFocusSink
-//
-//----------------------------------------------------------------------------
 
 void CPropertyMonitorTextService::_UninitThreadFocusSink()
 {
@@ -83,7 +47,3 @@ void CPropertyMonitorTextService::_UninitThreadFocusSink()
         pSource->Release();
     }
 }
- 
- 
-
-

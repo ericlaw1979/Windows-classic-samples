@@ -1,23 +1,8 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  ThreadMgrEventSink.cpp
-//
-//          ITfThreadMgrEventSink implementation.
-//
-//////////////////////////////////////////////////////////////////////
-
+// ITfThreadMgrEventSink implementation.
 #include "Globals.h"
 #include "TextService.h"
 
 //+---------------------------------------------------------------------------
-//
 // OnInitDocumentMgr
 //
 // Sink called by the framework just before the first context is pushed onto
@@ -26,55 +11,48 @@
 
 STDAPI CPropertyMonitorTextService::OnInitDocumentMgr(ITfDocumentMgr *pDocMgr)
 {
+    OutputDebugString(L"TSF: CPropertyMonitorTextService::OnInitDocumentMgr");
     return S_OK;
 }
 
 //+---------------------------------------------------------------------------
-//
 // OnUninitDocumentMgr
 //
 // Sink called by the framework just after the last context is popped off a
 // document.
 //----------------------------------------------------------------------------
-
 STDAPI CPropertyMonitorTextService::OnUninitDocumentMgr(ITfDocumentMgr *pDocMgr)
 {
     return S_OK;
 }
 
 //+---------------------------------------------------------------------------
-//
 // OnSetFocus
 //
 // Sink called by the framework when focus changes from one document to
 // another.  Either document may be NULL, meaning previously there was no
 // focus document, or now no document holds the input focus.
 //----------------------------------------------------------------------------
-
 STDAPI CPropertyMonitorTextService::OnSetFocus(ITfDocumentMgr *pDocMgrFocus, ITfDocumentMgr *pDocMgrPrevFocus)
 {
-    //
+    OutputDebugString(L"TSF: CPropertyMonitorTextService::OnSetFocus");
     // Whenever focus is changed, we initialize the TextEditSink.
-    //
     _InitTextEditSink(pDocMgrFocus);
 
     return S_OK;
 }
 
 //+---------------------------------------------------------------------------
-//
 // OnPushContext
 //
 // Sink called by the framework when a context is pushed.
 //----------------------------------------------------------------------------
-
 STDAPI CPropertyMonitorTextService::OnPushContext(ITfContext *pContext)
 {
     return S_OK;
 }
 
 //+---------------------------------------------------------------------------
-//
 // OnPopContext
 //
 // Sink called by the framework when a context is popped.
@@ -86,12 +64,10 @@ STDAPI CPropertyMonitorTextService::OnPopContext(ITfContext *pContext)
 }
 
 //+---------------------------------------------------------------------------
-//
 // _InitThreadMgrEventSink
 //
 // Advise our sink.
 //----------------------------------------------------------------------------
-
 BOOL CPropertyMonitorTextService::_InitThreadMgrEventSink()
 {
     ITfSource *pSource;
@@ -117,12 +93,10 @@ Exit:
 }
 
 //+---------------------------------------------------------------------------
-//
 // _UninitThreadMgrEventSink
 //
 // Unadvise our sink.
 //----------------------------------------------------------------------------
-
 void CPropertyMonitorTextService::_UninitThreadMgrEventSink()
 {
     ITfSource *pSource;

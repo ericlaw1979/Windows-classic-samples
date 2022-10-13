@@ -1,17 +1,4 @@
-//////////////////////////////////////////////////////////////////////
-//
-//  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-//  ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
-//  TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-//  PARTICULAR PURPOSE.
-//
-//  Copyright (C) 2003  Microsoft Corporation.  All rights reserved.
-//
-//  Server.cpp
-//
 //          COM server exports.
-//
-//////////////////////////////////////////////////////////////////////
 
 #include "Globals.h"
 #include "TextService.h"
@@ -19,6 +6,8 @@
 // from Register.cpp
 BOOL RegisterProfiles();
 void UnregisterProfiles();
+BOOL RegisterCategories();
+void UnregisterCategories();
 BOOL RegisterServer();
 void UnregisterServer();
 
@@ -27,22 +16,10 @@ void FreeGlobalObjects(void);
 class CClassFactory;
 static CClassFactory *g_ObjectInfo[1] = { NULL };
 
-//+---------------------------------------------------------------------------
-//
-//  DllAddRef
-//
-//----------------------------------------------------------------------------
-
 void DllAddRef(void)
 {
     InterlockedIncrement(&g_cRefDll);
 }
-
-//+---------------------------------------------------------------------------
-//
-//  DllRelease
-//
-//----------------------------------------------------------------------------
 
 void DllRelease(void)
 {
@@ -50,7 +27,7 @@ void DllRelease(void)
     {
         EnterCriticalSection(&g_cs);
 
-        // need to check ref again after grabbing mutex
+        // Check ref after grabbing mutex
         if (g_ObjectInfo[0] != NULL)
         {
             FreeGlobalObjects();
@@ -66,7 +43,6 @@ void DllRelease(void)
 //  CClassFactory declaration with IClassFactory Interface
 //
 //----------------------------------------------------------------------------
-
 class CClassFactory : public IClassFactory
 {
 public:
@@ -91,12 +67,6 @@ public:
     HRESULT (*_pfnCreateInstance)(IUnknown *pUnkOuter, REFIID riid, void **ppvObj);
 };
 
-//+---------------------------------------------------------------------------
-//
-//  CClassFactory::QueryInterface
-//
-//----------------------------------------------------------------------------
-
 STDAPI CClassFactory::QueryInterface(REFIID riid, void **ppvObj)
 {
     if (IsEqualIID(riid, IID_IClassFactory) || IsEqualIID(riid, IID_IUnknown))
@@ -109,23 +79,11 @@ STDAPI CClassFactory::QueryInterface(REFIID riid, void **ppvObj)
     return E_NOINTERFACE;
 }
 
-//+---------------------------------------------------------------------------
-//
-//  CClassFactory::AddRef
-//
-//----------------------------------------------------------------------------
-
 STDAPI_(ULONG) CClassFactory::AddRef()
 {
     DllAddRef();
     return g_cRefDll+1; // -1 w/ no refs
 }
-
-//+---------------------------------------------------------------------------
-//
-//  CClassFactory::Release
-//
-//----------------------------------------------------------------------------
 
 STDAPI_(ULONG) CClassFactory::Release()
 {
@@ -133,22 +91,10 @@ STDAPI_(ULONG) CClassFactory::Release()
     return g_cRefDll+1; // -1 w/ no refs
 }
 
-//+---------------------------------------------------------------------------
-//
-//  CClassFactory::CreateInstance
-//
-//----------------------------------------------------------------------------
-
 STDAPI CClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, void **ppvObj)
 {
     return _pfnCreateInstance(pUnkOuter, riid, ppvObj);
 }
-
-//+---------------------------------------------------------------------------
-//
-//  CClassFactory::LockServer
-//
-//----------------------------------------------------------------------------
 
 STDAPI CClassFactory::LockServer(BOOL fLock)
 {
@@ -164,12 +110,6 @@ STDAPI CClassFactory::LockServer(BOOL fLock)
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-//  BuildGlobalObjects
-//
-//----------------------------------------------------------------------------
-
 void BuildGlobalObjects(void)
 {
     // Build CClassFactory Objects
@@ -179,12 +119,6 @@ void BuildGlobalObjects(void)
     // You can add more object info here.
     // Don't forget to increase number of item for g_ObjectInfo[],
 }
-
-//+---------------------------------------------------------------------------
-//
-//  FreeGlobalObjects
-//
-//----------------------------------------------------------------------------
 
 void FreeGlobalObjects(void)
 {
@@ -198,12 +132,6 @@ void FreeGlobalObjects(void)
         }
     }
 }
-
-//+---------------------------------------------------------------------------
-//
-//  DllGetClassObject
-//
-//----------------------------------------------------------------------------
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppvObj)
 {
@@ -240,12 +168,6 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppvObj)
     return CLASS_E_CLASSNOTAVAILABLE;
 }
 
-//+---------------------------------------------------------------------------
-//
-//  DllCanUnloadNow
-//
-//----------------------------------------------------------------------------
-
 STDAPI DllCanUnloadNow(void)
 {
     if (g_cRefDll >= 0) // -1 with no refs
@@ -254,31 +176,12 @@ STDAPI DllCanUnloadNow(void)
     return S_OK;
 }
 
-//+---------------------------------------------------------------------------
-//
-//  DllUnregisterServer
-//
-//----------------------------------------------------------------------------
-
-STDAPI DllUnregisterServer(void)
-{
-    UnregisterProfiles();
-    UnregisterServer();
-
-    return S_OK;
-}
-
-//+---------------------------------------------------------------------------
-//
-//  DllRegisterServer
-//
-//----------------------------------------------------------------------------
-
+// register this service's profile with TSF
 STDAPI DllRegisterServer(void)
 {
-    // register this service's profile with the tsf
     if (!RegisterServer() ||
-        !RegisterProfiles())
+        !RegisterProfiles() ||
+        !RegisterCategories())
     {
         DllUnregisterServer(); // cleanup any loose ends
         return E_FAIL;
@@ -287,3 +190,12 @@ STDAPI DllRegisterServer(void)
     return S_OK;
 }
 
+// unregister this service's profile from TSF
+STDAPI DllUnregisterServer(void)
+{
+    UnregisterCategories();
+    UnregisterProfiles();
+    UnregisterServer();
+
+    return S_OK;
+}

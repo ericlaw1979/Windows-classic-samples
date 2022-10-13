@@ -11,9 +11,10 @@
 void DllAddRef();
 void DllRelease();
 
+// All languages
 #define TEXTSERVICE_LANGID    (0xFFFF)
 
-#define TEXTSERVICE_DESC    TEXT("Property Monitor")
+#define TEXTSERVICE_DESC    TEXT("TSF Property Monitor")
 #define TEXTSERVICE_MODEL   TEXT("Apartment")
 
 #define TEXTSERVICE_ICON_INDEX  0
